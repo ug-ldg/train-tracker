@@ -73,16 +73,16 @@ jobs:
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
             # Mise à jour du fichier d'environnement
-            cat > .env << 'EOF'
-            POSTGRES_USER=${{ secrets.POSTGRES_USER }}
-            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-            POSTGRES_DB=${{ secrets.POSTGRES_DB }}
-            SNCF_API_KEY=${{ secrets.SNCF_API_KEY }}
-            DOMAIN=${{ secrets.DOMAIN }}
-            ACME_EMAIL=${{ secrets.ACME_EMAIL }}
-            GITHUB_REPOSITORY=${{ github.repository }}
-            IMAGE_TAG=${{ github.sha }}
-            EOF
+            {
+              echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}"
+              echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}"
+              echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}"
+              echo "SNCF_API_KEY=${{ secrets.SNCF_API_KEY }}"
+              echo "DOMAIN=${{ secrets.DOMAIN }}"
+              echo "ACME_EMAIL=${{ secrets.ACME_EMAIL }}"
+              echo "GITHUB_REPOSITORY=${{ github.repository }}"
+              echo "IMAGE_TAG=${{ github.sha }}"
+            } > .env
 
             # Pull des nouvelles images et redémarrage
             docker compose -f infra/docker/docker-compose.prod.yml pull
