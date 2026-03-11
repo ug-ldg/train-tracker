@@ -1,159 +1,79 @@
-# Turborepo starter
+# Train Tracker
 
-This Turborepo starter is maintained by the Turborepo core team.
+Tableau de bord temps réel de surveillance du réseau ferroviaire SNCF. Visualise les perturbations par ligne et calcule un **Index de Stress** pour identifier les lignes les plus impactées.
 
-## Using this example
+**Live : [train-tracker.online](https://train-tracker.online)**
 
-Run the following command:
+## Fonctionnalités
 
-```sh
-npx create-turbo@latest
+- **Carte interactive** : position des trains perturbés en temps réel (Leaflet)
+- **Index de Stress** : score par ligne (LOW → CRITICAL) basé sur le nombre de trains et le retard moyen
+- **Alertes temps réel** : notifications push via WebSocket (Socket.io) à chaque poll SNCF
+- **Mise à jour automatique** : poll de l'API SNCF toutes les 60 secondes
+
+## Stack technique
+
+| Couche | Technologie |
+|--------|-------------|
+| Mono-repo | Turborepo + npm workspaces |
+| Backend | NestJS 10, TypeORM, Socket.io |
+| Base de données | PostgreSQL 16 + TimescaleDB |
+| Cache | Redis 7 |
+| Frontend | Next.js 14, Tailwind CSS, Leaflet, Zustand |
+| Infra | Docker, Traefik v2 (TLS/Let's Encrypt) |
+| CI/CD | GitHub Actions → GHCR → VPS Hostinger |
+
+## Architecture
+
+```
+train-tracker/
+├── apps/
+│   ├── api/          # NestJS — polling SNCF, calcul stress, WebSocket
+│   └── web/          # Next.js — carte + dashboard
+├── packages/
+│   ├── shared-types/ # Types partagés (StressScore, Alert…)
+│   └── ui/           # Composants React réutilisables
+└── infra/
+    └── docker/       # docker-compose.prod.yml (Traefik + services)
 ```
 
-## What's inside?
+## Lancer en local
 
-This Turborepo includes the following packages/apps:
+**Prérequis** : Docker, Node.js 20+, une clé API SNCF OpenData
 
-### Apps and Packages
+```bash
+# 1. Cloner le dépôt
+git clone https://github.com/<your-username>/train-tracker.git
+cd train-tracker
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+# 2. Variables d'environnement
+cp .env.example apps/api/.env
+# Renseigner DATABASE_URL, REDIS_URL, SNCF_API_KEY dans apps/api/.env
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+# 3. Démarrer la base de données et Redis
+docker compose -f infra/docker/docker-compose.yml up -d db redis
 
-### Utilities
+# 4. Installer les dépendances
+npm install
 
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+# 5. Démarrer l'API et le frontend
+npm run dev
 ```
 
-Without global `turbo`, use your package manager:
+- Frontend : http://localhost:3000
+- API : http://localhost:3001
+- Adminer (DB) : http://localhost:8080
 
-```sh
-cd my-turborepo
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
-```
+## Déploiement
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+Le déploiement est entièrement automatisé via GitHub Actions sur chaque push sur `main` :
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+1. Build des images Docker (API + Web) et push sur GitHub Container Registry
+2. SSH sur le VPS → pull des nouvelles images → `docker compose up -d`
 
-```sh
-turbo build --filter=docs
-```
+Les secrets nécessaires sont configurés dans les **Repository secrets** GitHub :
+`VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `SNCF_API_KEY`, `DOMAIN`, `ACME_EMAIL`
 
-Without global `turbo`:
+## Source des données
 
-```sh
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+[SNCF OpenData](https://www.sncf-connect.com/aide/open-data) — API `/disruptions` (5 000 req/jour, poll toutes les 60 s)
