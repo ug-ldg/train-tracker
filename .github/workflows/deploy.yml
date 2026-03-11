@@ -85,8 +85,8 @@ jobs:
             } > .env
 
             # Pull des nouvelles images et redémarrage
-            docker compose -f infra/docker/docker-compose.prod.yml pull
-            docker compose -f infra/docker/docker-compose.prod.yml up -d --remove-orphans
+            docker compose -f infra/docker/docker-compose.prod.yml --env-file .env pull
+            docker compose -f infra/docker/docker-compose.prod.yml --env-file .env up -d --remove-orphans
 
             # Nettoyage des anciennes images
             docker image prune -f
