@@ -52,7 +52,7 @@ export class TrainsService {
     delayStatus: string; nextStopName: string;
     firstSeen: string; lastSeen: string;
   }[]> {
-    const GAP_MS = 3 * 60 * 1000;
+    const GAP_MS = 5 * 60 * 1000;
 
     const records = await this.trainRepo.find({
       where: { recordedAt: Between(from, to) },

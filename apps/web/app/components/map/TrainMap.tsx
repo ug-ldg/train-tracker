@@ -1,6 +1,8 @@
 'use client';
 
-import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, Popup, Marker } from 'react-leaflet';
+import MarkerClusterGroup from 'react-leaflet-cluster';
+import L from 'leaflet';
 import { useTrainStore } from '../../stores/trainStore';
 import 'leaflet/dist/leaflet.css';
 
@@ -12,9 +14,19 @@ const LEVEL_COLORS = {
 };
 
 function delayColor(seconds: number): string {
-    if (seconds < 300) return '#facc15';  // < 5 min : jaune
-    if (seconds < 900) return '#f97316';  // < 15 min : orange
-    return '#ef4444';                      // ≥ 15 min : rouge
+    if (seconds < 300) return '#facc15';
+    if (seconds < 900) return '#f97316';
+    return '#ef4444';
+}
+
+function createTrainIcon(color: string) {
+    return L.divIcon({
+        html: `<div style="width:10px;height:10px;border-radius:50%;background:${color};border:1px solid rgba(255,255,255,0.4);box-shadow:0 0 4px ${color}66"></div>`,
+        className: '',
+        iconSize: [10, 10],
+        iconAnchor: [5, 5],
+        popupAnchor: [0, -6],
+    });
 }
 
 export function TrainMap() {
@@ -63,12 +75,12 @@ export function TrainMap() {
                 ))
             }
 
-            {/* Points individuels par train en retard */}
-            {displayedTrains
+            {/* Points individuels — temps réel (CircleMarker sans cluster) */}
+            {mode === 'realtime' && trains
                 .filter((t) => t.lat !== 0 && t.lon !== 0)
                 .map((t, i) => (
                     <CircleMarker
-                        key={`${t.trainId}-${i}`}
+                        key={`rt-${t.trainId}-${i}`}
                         center={[t.lat, t.lon]}
                         radius={5}
                         pathOptions={{
@@ -82,20 +94,47 @@ export function TrainMap() {
                             <div className="text-sm">
                                 <strong>{t.lineName}</strong><br />
                                 {t.nextStopName && <>Gare : {t.nextStopName}<br /></>}
-                                Retard{mode === 'history' ? ' moyen' : ''} : +{Math.round(t.delaySeconds / 60)} min
-                                {mode === 'history' && t.firstSeen && t.lastSeen && (
-                                    <>
-                                        <br />
-                                        Du {new Date(t.firstSeen).toLocaleDateString('fr-FR')} à {new Date(t.firstSeen).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                                        <br />
-                                        au {new Date(t.lastSeen).toLocaleDateString('fr-FR')} à {new Date(t.lastSeen).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                                    </>
-                                )}
+                                Retard : +{Math.round(t.delaySeconds / 60)} min
                             </div>
                         </Popup>
                     </CircleMarker>
                 ))
             }
+
+            {/* Points historiques — avec clustering */}
+            {mode === 'history' && (
+                <MarkerClusterGroup
+                    chunkedLoading
+                    maxClusterRadius={40}
+                >
+                    {displayedTrains
+                        .filter((t) => t.lat !== 0 && t.lon !== 0)
+                        .map((t, i) => (
+                            <Marker
+                                key={`hist-${t.trainId}-${i}`}
+                                position={[t.lat, t.lon]}
+                                icon={createTrainIcon(delayColor(t.delaySeconds))}
+                            >
+                                <Popup>
+                                    <div className="text-sm">
+                                        <strong>{t.lineName}</strong><br />
+                                        {t.nextStopName && <>Gare : {t.nextStopName}<br /></>}
+                                        Retard moyen : +{Math.round(t.delaySeconds / 60)} min
+                                        {t.firstSeen && t.lastSeen && (
+                                            <>
+                                                <br />
+                                                Du {new Date(t.firstSeen).toLocaleDateString('fr-FR')} à {new Date(t.firstSeen).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                                                <br />
+                                                au {new Date(t.lastSeen).toLocaleDateString('fr-FR')} à {new Date(t.lastSeen).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                                            </>
+                                        )}
+                                    </div>
+                                </Popup>
+                            </Marker>
+                        ))
+                    }
+                </MarkerClusterGroup>
+            )}
         </MapContainer>
     );
 }
