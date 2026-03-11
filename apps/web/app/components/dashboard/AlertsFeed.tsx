@@ -25,7 +25,7 @@ export function AlertsFeed() {
       <div className="flex items-center justify-between shrink-0">
         {lastUpdated ? (
           <p className="text-zinc-500 text-xs">
-            Mis à jour à <span className="font-semibold text-zinc-300">{lastUpdated.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+            Dernière mise à jour : <span className="font-semibold text-zinc-300">{lastUpdated.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
           </p>
         ) : <span />}
         <span className={`flex items-center gap-1.5 text-xs font-medium ${isConnected ? 'text-emerald-400' : 'text-zinc-500'}`}>

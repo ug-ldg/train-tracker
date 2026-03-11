@@ -137,9 +137,9 @@ export function TrainMap() {
                 >
                     {displayedTrains
                         .filter((t) => t.lat !== 0 && t.lon !== 0 && !isNaN(t.lat) && !isNaN(t.lon))
-                        .map((t) => (
+                        .map((t, i) => (
                             <Marker
-                                key={t.trainId}
+                                key={`${t.trainId}-${i}`}
                                 position={[t.lat, t.lon]}
                                 icon={createTrainIcon(delayColor(t.delaySeconds))}
                             >
