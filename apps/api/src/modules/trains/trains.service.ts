@@ -11,6 +11,7 @@ export class TrainsService {
   ) {}
 
   findLatest(): Promise<TrainPosition[]> {
+    const cutoff = new Date(Date.now() - 2 * 60 * 1000);
     return this.trainRepo
       .createQueryBuilder('tp')
       .where((qb) => {
@@ -22,6 +23,7 @@ export class TrainsService {
           .getQuery();
         return `tp.recorded_at = ${sub}`;
       })
+      .andWhere('tp.recorded_at > :cutoff', { cutoff })
       .orderBy('tp.line_id', 'ASC')
       .getMany();
   }

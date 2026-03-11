@@ -49,16 +49,15 @@ export class PollerService {
             const scores = await this.stressScoreService.computeAll();
             this.alertsGateway.emitStressUpdate(scores);
 
-            // Alerte pour les lignes CRITICAL
-            for (const s of scores) {
-                if (s.level === 'CRITICAL') {
-                    this.alertsGateway.emitAlert(
-                        s.lineId,
-                        s.level,
-                        `Ligne ${s.lineName} : retard moyen ${Math.round(s.avgDelaySeconds / 60)} min`,
-                    );
-                }
-            }
+            // Émet la liste complète des alertes actives (remplace, ne cumule pas)
+            const activeAlerts = scores
+                .filter((s) => s.level === 'CRITICAL' || s.level === 'HIGH')
+                .map((s) => ({
+                    lineId: s.lineId,
+                    level: s.level,
+                    message: `${s.lineName} : retard moyen ${Math.round(s.avgDelaySeconds / 60)} min`,
+                }));
+            this.alertsGateway.emitActiveAlerts(activeAlerts);
 
             if (positions.length > 0) {
                 await this.trainsService.saveMany(positions);

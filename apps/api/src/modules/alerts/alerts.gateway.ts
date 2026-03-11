@@ -33,12 +33,10 @@ export class AlertsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.emit('trains_update', trains);
   }
 
-  emitAlert(lineId: string, level: string, message: string) {
-    this.server.emit('alert', {
-      lineId,
-      level,
-      message,
+  emitActiveAlerts(alerts: { lineId: string; level: string; message: string }[]) {
+    this.server.emit('active_alerts', alerts.map((a) => ({
+      ...a,
       triggeredAt: new Date().toISOString(),
-    });
+    })));
   }
 }

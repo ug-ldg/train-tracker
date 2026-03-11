@@ -40,7 +40,7 @@ interface TrainStore {
   historyTrains: TrainPosition[];
   setStressScores: (scores: StressScore[]) => void;
   setTrains: (trains: TrainPosition[]) => void;
-  addAlert: (alert: Alert) => void;
+  setAlerts: (alerts: Alert[]) => void;
   setConnected: (connected: boolean) => void;
   setMode: (mode: 'realtime' | 'history') => void;
   setHistoryTrains: (trains: TrainPosition[]) => void;
@@ -56,10 +56,7 @@ export const useTrainStore = create<TrainStore>((set) => ({
   historyTrains: [],
   setStressScores: (scores) => set({ stressScores: scores, lastUpdated: new Date() }),
   setTrains: (trains) => set({ trains }),
-  addAlert: (alert) =>
-    set((state) => ({
-      alerts: [alert, ...state.alerts].slice(0, 20), // max 20 alertes
-    })),
+  setAlerts: (alerts) => set({ alerts }),
   setConnected: (connected) => set({ isConnected: connected }),
   setMode: (mode) => set({ mode }),
   setHistoryTrains: (historyTrains) => set({ historyTrains }),
