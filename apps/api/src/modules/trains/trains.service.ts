@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, Repository } from 'typeorm';
+import { Between, MoreThan, Repository } from 'typeorm';
 import { TrainPosition } from './train-position.entity';
 
 @Injectable()
@@ -10,22 +10,19 @@ export class TrainsService {
     private readonly trainRepo: Repository<TrainPosition>,
   ) {}
 
-  findLatest(): Promise<TrainPosition[]> {
-    const cutoff = new Date(Date.now() - 2 * 60 * 1000);
-    return this.trainRepo
-      .createQueryBuilder('tp')
-      .where((qb) => {
-        const sub = qb
-          .subQuery()
-          .select('MAX(inner.recorded_at)')
-          .from(TrainPosition, 'inner')
-          .where('inner.train_id = tp.train_id')
-          .getQuery();
-        return `tp.recorded_at = ${sub}`;
-      })
-      .andWhere('tp.recorded_at > :cutoff', { cutoff })
-      .orderBy('tp.line_id', 'ASC')
-      .getMany();
+  async findLatest(): Promise<TrainPosition[]> {
+    const cutoff = new Date(Date.now() - 3 * 60 * 1000);
+    const records = await this.trainRepo.find({
+      where: { recordedAt: MoreThan(cutoff) },
+      order: { recordedAt: 'DESC' },
+    });
+    // Déduplique : on garde uniquement l'enregistrement le plus récent par trainId
+    const seen = new Set<string>();
+    return records.filter((r) => {
+      if (seen.has(r.trainId)) return false;
+      seen.add(r.trainId);
+      return true;
+    });
   }
 
   findByLine(lineId: string): Promise<TrainPosition[]> {
@@ -41,8 +38,9 @@ export class TrainsService {
     return this.trainRepo.save(entity);
   }
 
-  saveMany(data: Partial<TrainPosition>[]): Promise<TrainPosition[]> {
-    const entities = this.trainRepo.create(data);
+  async saveMany(data: Partial<TrainPosition>[]): Promise<TrainPosition[]> {
+    const now = new Date();
+    const entities = this.trainRepo.create(data.map((d) => ({ ...d, recordedAt: now })));
     return this.trainRepo.save(entities);
   }
 

@@ -2,7 +2,6 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  CreateDateColumn,
   Index,
 } from 'typeorm';
 
@@ -40,6 +39,6 @@ export class TrainPosition {
   @Column({ name: 'next_stop_name', default: '' })
   nextStopName: string;
 
-  @CreateDateColumn({ name: 'recorded_at' })
+  @Column({ name: 'recorded_at', type: 'timestamp', nullable: false })
   recordedAt: Date;
 }

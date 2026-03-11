@@ -51,7 +51,7 @@ export function TrainMap() {
 
             {/* Cercles de stress par ligne (temps réel uniquement) */}
             {mode === 'realtime' && stressScores
-                .filter((s) => s.avgLat !== 0 && s.avgLon !== 0)
+                .filter((s) => s.avgLat !== 0 && s.avgLon !== 0 && !isNaN(s.avgLat) && !isNaN(s.avgLon))
                 .map((s) => (
                     <CircleMarker
                         key={s.lineId}
@@ -75,31 +75,29 @@ export function TrainMap() {
                 ))
             }
 
-            {/* Points individuels — temps réel (CircleMarker sans cluster) */}
-            {mode === 'realtime' && trains
-                .filter((t) => t.lat !== 0 && t.lon !== 0)
-                .map((t, i) => (
-                    <CircleMarker
-                        key={`rt-${t.trainId}-${i}`}
-                        center={[t.lat, t.lon]}
-                        radius={5}
-                        pathOptions={{
-                            color: delayColor(t.delaySeconds),
-                            fillColor: delayColor(t.delaySeconds),
-                            fillOpacity: 0.9,
-                            weight: 1,
-                        }}
-                    >
-                        <Popup>
-                            <div className="text-sm">
-                                <strong>{t.lineName}</strong><br />
-                                {t.nextStopName && <>Gare : {t.nextStopName}<br /></>}
-                                Retard : +{Math.round(t.delaySeconds / 60)} min
-                            </div>
-                        </Popup>
-                    </CircleMarker>
-                ))
-            }
+            {/* Points individuels — temps réel avec clustering */}
+            {mode === 'realtime' && (
+                <MarkerClusterGroup chunkedLoading maxClusterRadius={40}>
+                    {trains
+                        .filter((t) => t.lat !== 0 && t.lon !== 0 && !isNaN(t.lat) && !isNaN(t.lon))
+                        .map((t, i) => (
+                            <Marker
+                                key={`rt-${t.trainId}-${i}`}
+                                position={[t.lat, t.lon]}
+                                icon={createTrainIcon(delayColor(t.delaySeconds))}
+                            >
+                                <Popup>
+                                    <div className="text-sm">
+                                        <strong>{t.lineName}</strong><br />
+                                        {t.nextStopName && <>Gare : {t.nextStopName}<br /></>}
+                                        Retard : +{Math.round(t.delaySeconds / 60)} min
+                                    </div>
+                                </Popup>
+                            </Marker>
+                        ))
+                    }
+                </MarkerClusterGroup>
+            )}
 
             {/* Points historiques — avec clustering */}
             {mode === 'history' && (
@@ -108,7 +106,7 @@ export function TrainMap() {
                     maxClusterRadius={40}
                 >
                     {displayedTrains
-                        .filter((t) => t.lat !== 0 && t.lon !== 0)
+                        .filter((t) => t.lat !== 0 && t.lon !== 0 && !isNaN(t.lat) && !isNaN(t.lon))
                         .map((t, i) => (
                             <Marker
                                 key={`hist-${t.trainId}-${i}`}

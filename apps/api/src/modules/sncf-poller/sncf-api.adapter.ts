@@ -31,8 +31,6 @@ export function adaptDisruptions(
 
   for (const disruption of disruptions) {
 
-  if (disruption.status === 'past') continue;
-
     for (const obj of disruption.impacted_objects ?? []) {
       const pt = obj.pt_object;
       if (pt.embedded_type !== 'trip' || !pt.trip) continue;
