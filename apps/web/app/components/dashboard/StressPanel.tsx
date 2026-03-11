@@ -14,20 +14,20 @@ export function StressPanel() {
 
   return (
     <div className="flex flex-col gap-3">
+      {lastUpdated && (
+        <p className="text-xs text-gray-500">
+          Dernière mise à jour : {lastUpdated.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+        </p>
+      )}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-white">Index de Stress</h2>
         <span className={`text-xs px-2 py-1 rounded-full ${isConnected ? 'bg-green-900 text-green-300' : 'bg-gray-700 text-gray-400'}`}>
           {isConnected ? '● Live' : '○ Déconnecté'}
         </span>
       </div>
-      {lastUpdated && (
-        <p className="text-xs text-gray-500">
-          Mis à jour à {lastUpdated.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-        </p>
-      )}
 
       {stressScores.length === 0 ? (
-        <p className="text-gray-500 text-sm">En attente de données...</p>
+        <p className="text-gray-500 text-sm">Aucun retard pour le moment</p>
       ) : (
         stressScores.map((s) => {
           const style = LEVEL_STYLES[s.level];

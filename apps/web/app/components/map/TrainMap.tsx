@@ -81,8 +81,16 @@ export function TrainMap() {
                         <Popup>
                             <div className="text-sm">
                                 <strong>{t.lineName}</strong><br />
-                                Gare : {t.nextStopName}<br />
-                                Retard : +{Math.round(t.delaySeconds / 60)} min
+                                {t.nextStopName && <>Gare : {t.nextStopName}<br /></>}
+                                Retard{mode === 'history' ? ' moyen' : ''} : +{Math.round(t.delaySeconds / 60)} min
+                                {mode === 'history' && t.firstSeen && t.lastSeen && (
+                                    <>
+                                        <br />
+                                        Du {new Date(t.firstSeen).toLocaleDateString('fr-FR')} à {new Date(t.firstSeen).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                                        <br />
+                                        au {new Date(t.lastSeen).toLocaleDateString('fr-FR')} à {new Date(t.lastSeen).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                                    </>
+                                )}
                             </div>
                         </Popup>
                     </CircleMarker>

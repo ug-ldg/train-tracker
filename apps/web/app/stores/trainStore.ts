@@ -28,6 +28,8 @@ export interface TrainPosition {
   delaySeconds: number;
   delayStatus: string;
   nextStopName: string;
+  firstSeen?: string;
+  lastSeen?: string;
 }
 
 interface TrainStore {

@@ -26,6 +26,6 @@ export class TrainsController {
     if (isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
       throw new BadRequestException('Invalid date format');
     }
-    return this.trainsService.findByTimeRange(fromDate, toDate);
+    return this.trainsService.findDisruptionSessions(fromDate, toDate);
   }
 }
