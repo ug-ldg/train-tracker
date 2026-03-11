@@ -1,9 +1,10 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Popup, Marker } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
-import { useTrainStore } from '../../stores/trainStore';
+import { useTrainStore, TrainPosition } from '../../stores/trainStore';
 import 'leaflet/dist/leaflet.css';
 
 function delayColor(seconds: number): string {
@@ -12,14 +13,98 @@ function delayColor(seconds: number): string {
     return '#ef4444';
 }
 
-function createTrainIcon(color: string) {
+function createTrainIcon(color: string, highlighted = false) {
+    const size = highlighted ? 18 : 10;
+    const anchor = highlighted ? 9 : 5;
     return L.divIcon({
-        html: `<div style="width:10px;height:10px;border-radius:50%;background:${color};border:1px solid rgba(255,255,255,0.4);box-shadow:0 0 4px ${color}66"></div>`,
+        html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:${highlighted ? '2px solid white' : '1px solid rgba(255,255,255,0.4)'};box-shadow:0 0 ${highlighted ? '10px' : '4px'} ${color}"></div>`,
         className: '',
-        iconSize: [10, 10],
-        iconAnchor: [5, 5],
-        popupAnchor: [0, -6],
+        iconSize: [size, size],
+        iconAnchor: [anchor, anchor],
+        popupAnchor: [0, -(anchor + 2)],
     });
+}
+
+function createClusterIcon(count: number, highlighted: boolean) {
+    const size = highlighted ? 36 : 30;
+    const anchor = size / 2;
+    const html = highlighted
+        ? `<div style="width:${size}px;height:${size}px;border-radius:50%;background:rgba(250,204,21,0.15);border:2px solid #facc15;display:flex;align-items:center;justify-content:center;color:white;font-size:11px;font-weight:600;box-shadow:0 0 12px #facc1588">${count}</div>`
+        : `<div style="width:${size}px;height:${size}px;border-radius:50%;background:rgba(20,20,40,0.85);border:1px solid rgba(255,255,255,0.18);display:flex;align-items:center;justify-content:center;color:#d4d4d8;font-size:11px;font-weight:500">${count}</div>`;
+    return L.divIcon({ html, className: '', iconSize: [size, size], iconAnchor: [anchor, anchor] });
+}
+
+function RealtimeMarkers({ trains }: { trains: TrainPosition[] }) {
+    const hoveredTrainId = useTrainStore((s) => s.hoveredTrainId);
+    const selectedTrainId = useTrainStore((s) => s.selectedTrainId);
+    const setSelectedTrainId = useTrainStore((s) => s.setSelectedTrainId);
+    const hoveredIdRef = useRef<string | null>(null);
+    const clusterRef = useRef<any>(null);
+    const markerRefs = useRef<Map<string, any>>(new Map());
+
+    // Hover: mise à jour directe des icônes de cluster visibles
+    useEffect(() => {
+        hoveredIdRef.current = hoveredTrainId;
+        clusterRef.current?._featureGroup?.eachLayer?.((layer: any) => {
+            if (typeof layer.getChildCount === 'function') {
+                const hasHovered = layer.getAllChildMarkers().some(
+                    (m: any) => m.options.title === hoveredIdRef.current,
+                );
+                layer.setIcon(createClusterIcon(layer.getChildCount(), hasHovered));
+            }
+        });
+    }, [hoveredTrainId]);
+
+    // Click: zoom via zoomToShowLayer qui traverse la hiérarchie de clusters
+    useEffect(() => {
+        if (!selectedTrainId || !clusterRef.current) return;
+        const marker = markerRefs.current.get(selectedTrainId);
+        if (!marker) return;
+        clusterRef.current.zoomToShowLayer(marker, () => {
+            marker.openPopup();
+        });
+        // Reset immédiat pour permettre de recliquer la même card
+        setSelectedTrainId(null);
+    }, [selectedTrainId]);
+
+    return (
+        <MarkerClusterGroup
+            ref={clusterRef}
+            chunkedLoading
+            maxClusterRadius={40}
+            iconCreateFunction={(cluster: any) => {
+                const hasHovered = cluster.getAllChildMarkers().some(
+                    (m: any) => m.options.title === hoveredIdRef.current,
+                );
+                return createClusterIcon(cluster.getChildCount(), hasHovered);
+            }}
+        >
+            {trains
+                .filter((t) => t.lat !== 0 && t.lon !== 0 && !isNaN(t.lat) && !isNaN(t.lon))
+                .map((t) => (
+                    <Marker
+                        key={t.trainId}
+                        position={[t.lat, t.lon]}
+                        title={t.trainId}
+                        icon={createTrainIcon(delayColor(t.delaySeconds), t.trainId === hoveredTrainId)}
+                        zIndexOffset={t.trainId === hoveredTrainId ? 1000 : 0}
+                        ref={(m) => {
+                            if (m) markerRefs.current.set(t.trainId, m);
+                            else markerRefs.current.delete(t.trainId);
+                        }}
+                    >
+                        <Popup>
+                            <div className="text-sm">
+                                <strong>{t.lineName}</strong><br />
+                                {t.nextStopName && <>Gare : {t.nextStopName}<br /></>}
+                                Retard : +{Math.round(t.delaySeconds / 60)} min
+                            </div>
+                        </Popup>
+                    </Marker>
+                ))
+            }
+        </MarkerClusterGroup>
+    );
 }
 
 export function TrainMap() {
@@ -41,41 +126,16 @@ export function TrainMap() {
                 attribution='&copy; <a href="https://carto.com/">CARTO</a>'
             />
 
-            {/* Points individuels — temps réel avec clustering */}
-            {mode === 'realtime' && (
-                <MarkerClusterGroup chunkedLoading maxClusterRadius={40}>
-                    {trains
-                        .filter((t) => t.lat !== 0 && t.lon !== 0 && !isNaN(t.lat) && !isNaN(t.lon))
-                        .map((t, i) => (
-                            <Marker
-                                key={`rt-${t.trainId}-${i}`}
-                                position={[t.lat, t.lon]}
-                                icon={createTrainIcon(delayColor(t.delaySeconds))}
-                            >
-                                <Popup>
-                                    <div className="text-sm">
-                                        <strong>{t.lineName}</strong><br />
-                                        {t.nextStopName && <>Gare : {t.nextStopName}<br /></>}
-                                        Retard : +{Math.round(t.delaySeconds / 60)} min
-                                    </div>
-                                </Popup>
-                            </Marker>
-                        ))
-                    }
-                </MarkerClusterGroup>
-            )}
+            {mode === 'realtime' && <RealtimeMarkers trains={trains} />}
 
             {/* Points historiques — avec clustering */}
             {mode === 'history' && (
-                <MarkerClusterGroup
-                    chunkedLoading
-                    maxClusterRadius={40}
-                >
+                <MarkerClusterGroup chunkedLoading maxClusterRadius={40}>
                     {displayedTrains
                         .filter((t) => t.lat !== 0 && t.lon !== 0 && !isNaN(t.lat) && !isNaN(t.lon))
-                        .map((t, i) => (
+                        .map((t) => (
                             <Marker
-                                key={`hist-${t.trainId}-${i}`}
+                                key={t.trainId}
                                 position={[t.lat, t.lon]}
                                 icon={createTrainIcon(delayColor(t.delaySeconds))}
                             >

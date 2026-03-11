@@ -10,6 +10,9 @@ function delayBorderColor(seconds: number): string {
 
 export function AlertsFeed() {
   const trains = useTrainStore((s) => s.trains);
+  const hoveredTrainId = useTrainStore((s) => s.hoveredTrainId);
+  const setSelectedTrainId = useTrainStore((s) => s.setSelectedTrainId);
+  const setHoveredTrainId = useTrainStore((s) => s.setHoveredTrainId);
 
   const delayedTrains = trains
     .filter((t) => t.delaySeconds > 0)
@@ -29,20 +32,26 @@ export function AlertsFeed() {
           [&::-webkit-scrollbar-thumb]:bg-white/10
           [&::-webkit-scrollbar-thumb]:rounded-full
           hover:[&::-webkit-scrollbar-thumb]:bg-white/25">
-          {delayedTrains.map((train, i) => (
-            <div
-              key={`${train.trainId}-${i}`}
-              className={`p-3 rounded-xl bg-white/3 border border-white/6 border-l-2 ${delayBorderColor(train.delaySeconds)}`}
-            >
-              <p className="text-zinc-200 text-xs font-medium">{train.lineName}</p>
-              {train.nextStopName && (
-                <p className="text-zinc-400 text-xs mt-0.5">{train.nextStopName}</p>
-              )}
-              <p className="text-zinc-500 text-xs mt-1">
-                +{Math.round(train.delaySeconds / 60)} min de retard
-              </p>
-            </div>
-          ))}
+          {delayedTrains.map((train, i) => {
+            const isHovered = hoveredTrainId === train.trainId;
+            return (
+              <div
+                key={`${train.trainId}-${i}`}
+                className={`p-3 rounded-xl border border-white/6 border-l-2 ${delayBorderColor(train.delaySeconds)} cursor-pointer transition-colors duration-100 ${isHovered ? 'bg-white/8' : 'bg-white/3'}`}
+                onClick={() => setSelectedTrainId(train.trainId)}
+                onMouseEnter={() => setHoveredTrainId(train.trainId)}
+                onMouseLeave={() => setHoveredTrainId(null)}
+              >
+                <p className="text-zinc-200 text-xs font-medium">{train.lineName}</p>
+                {train.nextStopName && (
+                  <p className="text-zinc-400 text-xs mt-0.5">{train.nextStopName}</p>
+                )}
+                <p className="text-zinc-500 text-xs mt-1">
+                  +{Math.round(train.delaySeconds / 60)} min de retard
+                </p>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
