@@ -60,6 +60,7 @@ export function adaptDisruptions(
         lon: parseFloat(mostDelayedStop.stop_point.coord.lon),
         delaySeconds: maxDelay,
         delayStatus: mapEffectToStatus(disruption.severity.effect),
+        nextStopName: mostDelayedStop.stop_point.name,
       });
     }
   }

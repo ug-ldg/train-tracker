@@ -63,6 +63,8 @@ export class PollerService {
             if (positions.length > 0) {
                 await this.trainsService.saveMany(positions);
                 this.logger.log(`Saved ${positions.length} train positions`);
+                const latest = await this.trainsService.findLatest();
+                this.alertsGateway.emitTrainsUpdate(latest);
             }
         } catch (error) {
             this.logger.error('Failed to poll SNCF API', error?.message);

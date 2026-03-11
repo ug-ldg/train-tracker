@@ -29,6 +29,10 @@ export class AlertsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.emit('stress_update', scores);
   }
 
+  emitTrainsUpdate(trains: unknown[]) {
+    this.server.emit('trains_update', trains);
+  }
+
   emitAlert(lineId: string, level: string, message: string) {
     this.server.emit('alert', {
       lineId,

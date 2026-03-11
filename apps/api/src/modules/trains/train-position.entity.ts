@@ -37,6 +37,9 @@ export class TrainPosition {
   })
   delayStatus: string;
 
+  @Column({ name: 'next_stop_name', default: '' })
+  nextStopName: string;
+
   @CreateDateColumn({ name: 'recorded_at' })
   recordedAt: Date;
 }
