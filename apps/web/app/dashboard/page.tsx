@@ -6,10 +6,9 @@ import { AlertsFeed } from '../components/dashboard/AlertsFeed';
 import { HistoryPanel } from '../components/dashboard/HistoryPanel';
 import { useTrainStore } from '../stores/trainStore';
 
-// Désactive le SSR pour Leaflet (incompatible avec le rendu serveur)
 const TrainMap = dynamic(
   () => import('../components/map/TrainMap').then((m) => m.TrainMap),
-  { ssr: false, loading: () => <div className="w-full h-full flex items-center justify-center text-gray-600">Chargement de la carte...</div> }
+  { ssr: false, loading: () => <div className="w-full h-full flex items-center justify-center text-zinc-600 text-sm">Chargement de la carte...</div> }
 );
 
 export default function DashboardPage() {
@@ -23,24 +22,34 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex">
-      <aside className="w-80 shrink-0 bg-gray-950 border-r border-gray-800 p-4 overflow-y-auto flex flex-col gap-6">
-        <div>
-          <h1 className="text-xl font-bold text-white">Train Tracker</h1>
-          <p className="text-gray-500 text-xs mt-1">SNCF Real-time Monitor</p>
+    <div className="min-h-screen bg-zinc-950 text-white flex">
+      <aside className="w-80 shrink-0 bg-zinc-900/40 border-r border-white/6 p-5 overflow-y-auto flex flex-col gap-6">
+
+        {/* Header */}
+        <div className="flex flex-col gap-0.5">
+          <h1 className="text-base font-semibold tracking-tight text-white">Train Tracker</h1>
+          <p className="text-zinc-500 text-xs">SNCF Real-time Monitor</p>
         </div>
 
         {/* Toggle de mode */}
-        <div className="flex rounded overflow-hidden border border-gray-700 text-sm">
+        <div className="flex p-1 bg-zinc-800/60 rounded-lg text-xs gap-1">
           <button
             onClick={() => switchMode('realtime')}
-            className={`flex-1 py-2 transition-colors ${mode === 'realtime' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}
+            className={`flex-1 py-1.5 rounded-md font-medium transition-all ${
+              mode === 'realtime'
+                ? 'bg-zinc-700 text-white shadow-sm'
+                : 'text-zinc-500 hover:text-zinc-300'
+            }`}
           >
             Temps réel
           </button>
           <button
             onClick={() => switchMode('history')}
-            className={`flex-1 py-2 transition-colors ${mode === 'history' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}
+            className={`flex-1 py-1.5 rounded-md font-medium transition-all ${
+              mode === 'history'
+                ? 'bg-zinc-700 text-white shadow-sm'
+                : 'text-zinc-500 hover:text-zinc-300'
+            }`}
           >
             Historique
           </button>
@@ -49,6 +58,7 @@ export default function DashboardPage() {
         {mode === 'realtime' ? (
           <>
             <StressPanel />
+            <div className="border-t border-white/6" />
             <AlertsFeed />
           </>
         ) : (

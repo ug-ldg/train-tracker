@@ -6,19 +6,21 @@ export function AlertsFeed() {
   const alerts = useTrainStore((s) => s.alerts);
 
   return (
-    <div className="flex flex-col gap-2">
-      <h2 className="text-lg font-semibold text-white">Alertes actives</h2>
+    <div className="flex flex-col gap-3">
+      <h2 className="text-sm font-semibold text-white tracking-tight">Alertes actives</h2>
       {alerts.length === 0 ? (
-        <p className="text-gray-500 text-sm">Aucune alerte en cours</p>
+        <p className="text-zinc-600 text-xs">Aucune alerte en cours</p>
       ) : (
-        alerts.map((alert, i) => (
-          <div key={i} className="bg-red-950 border border-red-800 rounded-lg p-3">
-            <p className="text-red-300 text-sm">{alert.message}</p>
-            <p className="text-red-500 text-xs mt-1">
-              {new Date(alert.triggeredAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-            </p>
-          </div>
-        ))
+        <div className="flex flex-col gap-2">
+          {alerts.map((alert, i) => (
+            <div key={i} className="p-3 rounded-xl bg-red-500/5 border border-white/6 border-l-2 border-l-red-500">
+              <p className="text-zinc-200 text-xs leading-relaxed">{alert.message}</p>
+              <p className="text-zinc-600 text-xs mt-1.5">
+                {new Date(alert.triggeredAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+              </p>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

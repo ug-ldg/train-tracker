@@ -35,32 +35,34 @@ export function HistoryPanel() {
     }
 
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-5">
+            <h2 className="text-sm font-semibold text-white tracking-tight">Historique</h2>
+
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-                <div className="flex flex-col gap-1">
-                    <label className="text-xs text-gray-400">Début</label>
+                <div className="flex flex-col gap-1.5">
+                    <label className="text-xs text-zinc-500 uppercase tracking-widest">Début</label>
                     <input
                         type="datetime-local"
                         value={from}
                         onChange={(e) => setFrom(e.target.value)}
-                        className="bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:outline-none focus:border-blue-500"
+                        className="bg-zinc-900 border border-white/6 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:ring-1 focus:ring-white/20 transition-all"
                         required
                     />
                 </div>
-                <div className="flex flex-col gap-1">
-                    <label className="text-xs text-gray-400">Fin</label>
+                <div className="flex flex-col gap-1.5">
+                    <label className="text-xs text-zinc-500 uppercase tracking-widest">Fin</label>
                     <input
                         type="datetime-local"
                         value={to}
                         onChange={(e) => setTo(e.target.value)}
-                        className="bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:outline-none focus:border-blue-500"
+                        className="bg-zinc-900 border border-white/6 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:ring-1 focus:ring-white/20 transition-all"
                         required
                     />
                 </div>
                 <button
                     type="submit"
                     disabled={loading}
-                    className="bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 text-white text-sm font-medium py-2 rounded transition-colors"
+                    className="bg-white/6 hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-medium py-2 rounded-lg transition-all border border-white/6"
                 >
                     {loading ? 'Chargement...' : 'Afficher'}
                 </button>
@@ -71,13 +73,13 @@ export function HistoryPanel() {
             )}
 
             {!loading && historyTrains.length > 0 && (
-                <p className="text-gray-400 text-xs">
-                    {historyTrains.length} enregistrement{historyTrains.length > 1 ? 's' : ''} trouvé{historyTrains.length > 1 ? 's' : ''}
+                <p className="text-zinc-600 text-xs">
+                    {historyTrains.length} ensemble{historyTrains.length > 1 ? 's' : ''} de perturbation{historyTrains.length > 1 ? 's' : ''}
                 </p>
             )}
 
             {!loading && historyTrains.length === 0 && from && to && (
-                <p className="text-gray-500 text-xs">Aucune perturbation sur cette plage.</p>
+                <p className="text-zinc-600 text-xs">Aucune perturbation sur cette plage.</p>
             )}
         </div>
     );
