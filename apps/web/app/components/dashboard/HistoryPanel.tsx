@@ -6,9 +6,11 @@ import { useTrainStore } from '../../stores/trainStore';
 export function HistoryPanel() {
     const setHistoryTrains = useTrainStore((s) => s.setHistoryTrains);
     const historyTrains = useTrainStore((s) => s.historyTrains);
+    const from = useTrainStore((s) => s.historyFrom);
+    const to = useTrainStore((s) => s.historyTo);
+    const setFrom = useTrainStore((s) => s.setHistoryFrom);
+    const setTo = useTrainStore((s) => s.setHistoryTo);
 
-    const [from, setFrom] = useState('');
-    const [to, setTo] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
