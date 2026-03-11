@@ -32,6 +32,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       REDIS_URL: redis://redis:6379
       SNCF_API_KEY: ${SNCF_API_KEY}
+      CORS_ORIGIN: https://${DOMAIN}
     depends_on:
       db:
         condition: service_healthy
@@ -43,6 +44,10 @@ services:
       - "traefik.http.routers.api.entrypoints=websecure"
       - "traefik.http.routers.api.tls.certresolver=letsencrypt"
       - "traefik.http.services.api.loadbalancer.server.port=3001"
+      - "traefik.http.routers.ws.rule=Host(`${DOMAIN}`) && PathPrefix(`/socket.io`)"
+      - "traefik.http.routers.ws.entrypoints=websecure"
+      - "traefik.http.routers.ws.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.ws.service=api"
 
   web:
     image: ghcr.io/${GITHUB_REPOSITORY}/train-tracker-web:${IMAGE_TAG:-latest}
@@ -60,15 +65,15 @@ services:
       - "traefik.http.services.web.loadbalancer.server.port=3000"
 
   traefik:
-    image: traefik:v3.3
+    image: traefik:v2.11
     restart: unless-stopped
     command:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
-      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
       - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
       - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
