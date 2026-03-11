@@ -20,6 +20,10 @@ function delayColor(seconds: number): string {
 export function TrainMap() {
     const stressScores = useTrainStore((s) => s.stressScores);
     const trains = useTrainStore((s) => s.trains);
+    const mode = useTrainStore((s) => s.mode);
+    const historyTrains = useTrainStore((s) => s.historyTrains);
+
+    const displayedTrains = mode === 'history' ? historyTrains : trains;
 
     return (
         <MapContainer
@@ -33,8 +37,8 @@ export function TrainMap() {
                 attribution='&copy; <a href="https://carto.com/">CARTO</a>'
             />
 
-            {/* Cercles de stress par ligne */}
-            {stressScores
+            {/* Cercles de stress par ligne (temps réel uniquement) */}
+            {mode === 'realtime' && stressScores
                 .filter((s) => s.avgLat !== 0 && s.avgLon !== 0)
                 .map((s) => (
                     <CircleMarker
@@ -60,11 +64,11 @@ export function TrainMap() {
             }
 
             {/* Points individuels par train en retard */}
-            {trains
+            {displayedTrains
                 .filter((t) => t.lat !== 0 && t.lon !== 0)
-                .map((t) => (
+                .map((t, i) => (
                     <CircleMarker
-                        key={t.trainId}
+                        key={`${t.trainId}-${i}`}
                         center={[t.lat, t.lon]}
                         radius={5}
                         pathOptions={{

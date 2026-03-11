@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { TrainPosition } from './train-position.entity';
 
 @Injectable()
@@ -42,5 +42,13 @@ export class TrainsService {
   saveMany(data: Partial<TrainPosition>[]): Promise<TrainPosition[]> {
     const entities = this.trainRepo.create(data);
     return this.trainRepo.save(entities);
+  }
+
+  findByTimeRange(from: Date, to: Date): Promise<TrainPosition[]> {
+    return this.trainRepo.find({
+      where: { recordedAt: Between(from, to) },
+      order: { recordedAt: 'ASC' },
+      take: 1000,
+    });
   }
 }
