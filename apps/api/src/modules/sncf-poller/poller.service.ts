@@ -4,7 +4,6 @@ import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { firstValueFrom } from 'rxjs';
 import { TrainsService } from '../trains/trains.service';
-import { StressScoreService } from '../stress-score/stress-score.service';
 import { AlertsGateway } from '../alerts/alerts.gateway';
 import { adaptDisruptions } from './sncf-api.adapter';
 
@@ -17,7 +16,6 @@ export class PollerService {
         private readonly http: HttpService,
         private readonly config: ConfigService,
         private readonly trainsService: TrainsService,
-        private readonly stressScoreService: StressScoreService,
         private readonly alertsGateway: AlertsGateway,
     ) { }
 
@@ -47,20 +45,6 @@ export class PollerService {
             this.logger.log(`Fetched ${disruptions.length} disruptions`);
 
             const positions = adaptDisruptions(disruptions);
-
-            // Calcul des scores et push WebSocket
-            const scores = await this.stressScoreService.computeAll();
-            this.alertsGateway.emitStressUpdate(scores);
-
-            // Émet la liste complète des alertes actives (remplace, ne cumule pas)
-            const activeAlerts = scores
-                .filter((s) => s.level === 'CRITICAL' || s.level === 'HIGH')
-                .map((s) => ({
-                    lineId: s.lineId,
-                    level: s.level,
-                    message: `${s.lineName} : retard moyen ${Math.round(s.avgDelaySeconds / 60)} min`,
-                }));
-            this.alertsGateway.emitActiveAlerts(activeAlerts);
 
             if (positions.length > 0) {
                 await this.trainsService.saveMany(positions);

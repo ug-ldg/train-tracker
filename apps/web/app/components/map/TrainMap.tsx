@@ -1,17 +1,10 @@
 'use client';
 
-import { MapContainer, TileLayer, CircleMarker, Popup, Marker } from 'react-leaflet';
+import { MapContainer, TileLayer, Popup, Marker } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
 import { useTrainStore } from '../../stores/trainStore';
 import 'leaflet/dist/leaflet.css';
-
-const LEVEL_COLORS = {
-    LOW: '#22c55e',
-    MEDIUM: '#eab308',
-    HIGH: '#f97316',
-    CRITICAL: '#ef4444',
-};
 
 function delayColor(seconds: number): string {
     if (seconds < 300) return '#facc15';
@@ -30,7 +23,6 @@ function createTrainIcon(color: string) {
 }
 
 export function TrainMap() {
-    const stressScores = useTrainStore((s) => s.stressScores);
     const trains = useTrainStore((s) => s.trains);
     const mode = useTrainStore((s) => s.mode);
     const historyTrains = useTrainStore((s) => s.historyTrains);
@@ -48,32 +40,6 @@ export function TrainMap() {
                 url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
                 attribution='&copy; <a href="https://carto.com/">CARTO</a>'
             />
-
-            {/* Cercles de stress par ligne (temps réel uniquement) */}
-            {mode === 'realtime' && stressScores
-                .filter((s) => s.avgLat !== 0 && s.avgLon !== 0 && !isNaN(s.avgLat) && !isNaN(s.avgLon))
-                .map((s) => (
-                    <CircleMarker
-                        key={s.lineId}
-                        center={[s.avgLat, s.avgLon]}
-                        radius={8 + s.score * 12}
-                        pathOptions={{
-                            color: LEVEL_COLORS[s.level],
-                            fillColor: LEVEL_COLORS[s.level],
-                            fillOpacity: 0.2,
-                            weight: 2,
-                        }}
-                    >
-                        <Popup>
-                            <div className="text-sm">
-                                <strong>{s.lineName}</strong><br />
-                                Retard moyen : {Math.round(s.avgDelaySeconds / 60)} min<br />
-                                Score : {Math.round(s.score * 100)}%
-                            </div>
-                        </Popup>
-                    </CircleMarker>
-                ))
-            }
 
             {/* Points individuels — temps réel avec clustering */}
             {mode === 'realtime' && (

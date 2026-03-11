@@ -25,18 +25,7 @@ export class AlertsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.log(`Client disconnected: ${client.id}`);
   }
 
-  emitStressUpdate(scores: unknown[]) {
-    this.server.emit('stress_update', scores);
-  }
-
   emitTrainsUpdate(trains: unknown[]) {
     this.server.emit('trains_update', trains);
-  }
-
-  emitActiveAlerts(alerts: { lineId: string; level: string; message: string }[]) {
-    this.server.emit('active_alerts', alerts.map((a) => ({
-      ...a,
-      triggeredAt: new Date().toISOString(),
-    })));
   }
 }

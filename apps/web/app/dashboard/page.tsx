@@ -1,7 +1,6 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { StressPanel } from '../components/dashboard/StressPanel';
 import { AlertsFeed } from '../components/dashboard/AlertsFeed';
 import { HistoryPanel } from '../components/dashboard/HistoryPanel';
 import { useTrainStore } from '../stores/trainStore';
@@ -56,9 +55,7 @@ export default function DashboardPage() {
         </div>
 
         {mode === 'realtime' ? (
-          <div className="flex-1 min-h-0 flex flex-col gap-6">
-            <StressPanel />
-            <div className="border-t border-white/6 shrink-0" />
+          <div className="flex-1 min-h-0 flex flex-col">
             <AlertsFeed />
           </div>
         ) : (

@@ -5,7 +5,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TrainsModule } from './modules/trains/trains.module';
 import { SncfPollerModule } from './modules/sncf-poller/sncf-poller.module';
-import { StressScoreModule } from './modules/stress-score/stress-score.module';
 import { AlertsModule } from './modules/alerts/alerts.module';
 
 @Module({
@@ -23,7 +22,6 @@ import { AlertsModule } from './modules/alerts/alerts.module';
     }),
     TrainsModule,
     SncfPollerModule,
-    StressScoreModule,
     AlertsModule,
   ],
   controllers: [AppController],
