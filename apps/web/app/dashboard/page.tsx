@@ -23,7 +23,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white flex">
-      <aside className="w-80 shrink-0 bg-zinc-900/40 border-r border-white/6 p-5 overflow-y-auto flex flex-col gap-6">
+      <aside className="w-80 shrink-0 bg-zinc-900/40 border-r border-white/6 p-5 h-screen overflow-hidden flex flex-col gap-6">
 
         {/* Header */}
         <div className="flex flex-col gap-0.5">
@@ -56,11 +56,11 @@ export default function DashboardPage() {
         </div>
 
         {mode === 'realtime' ? (
-          <>
+          <div className="flex-1 min-h-0 flex flex-col gap-6">
             <StressPanel />
-            <div className="border-t border-white/6" />
+            <div className="border-t border-white/6 shrink-0" />
             <AlertsFeed />
-          </>
+          </div>
         ) : (
           <HistoryPanel />
         )}
