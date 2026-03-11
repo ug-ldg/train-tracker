@@ -33,14 +33,21 @@ interface TrainStore {
   setHoveredTrainId: (id: string | null) => void;
 }
 
+function todayAt(hours: number, minutes: number): string {
+  const d = new Date();
+  d.setHours(hours, minutes, 0, 0);
+  // Format YYYY-MM-DDTHH:mm attendu par datetime-local
+  return d.toISOString().slice(0, 16);
+}
+
 export const useTrainStore = create<TrainStore>((set) => ({
   trains: [],
   isConnected: false,
   lastUpdated: null,
   mode: 'realtime',
   historyTrains: [],
-  historyFrom: '',
-  historyTo: '',
+  historyFrom: todayAt(0, 0),
+  historyTo: todayAt(23, 59),
   selectedTrainId: null,
   hoveredTrainId: null,
   setTrains: (trains) => set({ trains, lastUpdated: new Date() }),
