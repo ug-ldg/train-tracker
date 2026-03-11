@@ -130,7 +130,11 @@ export function TrainMap() {
 
             {/* Points historiques — avec clustering */}
             {mode === 'history' && (
-                <MarkerClusterGroup chunkedLoading maxClusterRadius={40}>
+                <MarkerClusterGroup
+                    chunkedLoading
+                    maxClusterRadius={40}
+                    iconCreateFunction={(cluster: any) => createClusterIcon(cluster.getChildCount(), false)}
+                >
                     {displayedTrains
                         .filter((t) => t.lat !== 0 && t.lon !== 0 && !isNaN(t.lat) && !isNaN(t.lon))
                         .map((t) => (
