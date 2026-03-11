@@ -46,6 +46,7 @@ jobs:
           file: apps/web/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ github.repository }}/train-tracker-web:${{ github.sha }},${{ env.REGISTRY }}/${{ github.repository }}/train-tracker-web:latest
+          build-args: NEXT_PUBLIC_WS_URL=https://${{ secrets.DOMAIN }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

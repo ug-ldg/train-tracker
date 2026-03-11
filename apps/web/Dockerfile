@@ -16,6 +16,9 @@ COPY packages/ui ./packages/ui
 COPY packages/shared-types ./packages/shared-types
 COPY packages/typescript-config ./packages/typescript-config
 
+ARG NEXT_PUBLIC_WS_URL
+ENV NEXT_PUBLIC_WS_URL=$NEXT_PUBLIC_WS_URL
+
 RUN npm run build --workspace=apps/web
 
 # --- Production ---
