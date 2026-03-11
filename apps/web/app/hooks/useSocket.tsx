@@ -16,7 +16,13 @@ export function useSocket() {
       transports: ['websocket'],
     });
 
-    socket.on('connect', () => setConnected(true));
+    socket.on('connect', () => {
+      setConnected(true);
+      fetch(`${process.env.NEXT_PUBLIC_WS_URL}/api/stress`)
+        .then((r) => r.json())
+        .then(setStressScores)
+        .catch(() => {});
+    });
     socket.on('disconnect', () => setConnected(false));
     socket.on('stress_update', setStressScores);
     socket.on('alert', addAlert);
