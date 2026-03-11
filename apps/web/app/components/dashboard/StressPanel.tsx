@@ -10,7 +10,7 @@ const LEVEL_STYLES = {
 };
 
 export function StressPanel() {
-  const { stressScores, isConnected } = useTrainStore();
+  const { stressScores, isConnected, lastUpdated } = useTrainStore();
 
   return (
     <div className="flex flex-col gap-3">
@@ -20,6 +20,11 @@ export function StressPanel() {
           {isConnected ? '● Live' : '○ Déconnecté'}
         </span>
       </div>
+      {lastUpdated && (
+        <p className="text-xs text-gray-500">
+          Mis à jour à {lastUpdated.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+        </p>
+      )}
 
       {stressScores.length === 0 ? (
         <p className="text-gray-500 text-sm">En attente de données...</p>
